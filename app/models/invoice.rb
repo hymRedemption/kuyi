@@ -1,4 +1,6 @@
 class Invoice < ApplicationRecord
+  include DatePhase
+
   has_many :line_items
   belongs_to :renting_phase
 
@@ -11,37 +13,26 @@ class Invoice < ApplicationRecord
 
   private
 
-    def need_prev?(date)
-      start_date.mday == date.mday
-    end
-
-    def loop_num
-      months_between = (end_date.mjd - start_date.mjd) / 29 + 1
-      num = (1..months_between).find{ |i| start_date.months_since(i) > end_date }
+    def date_phase_unit
+      1
     end
 
     def set_line_items
-      item_start_date = start_date
-      loop_num.times.map do |i|
-        item_end_date = item_start_date.next_month
-        if need_prev?(item_end_date)
-          item_end_date = item_end_date.prev_day
-        end
-        if beyond_date?(item_end_date)
-          item_end_date = end_date
-          unit_price = renting_phase.price_per_day
-          units = end_date.mjd - item_start_date.mjd + 1
-        else
-          unit_price = renting_phase.price
-          units = 1
-        end
-        result = self.line_items.create(total: total, units: units, unit_price: unit_price, start_date: item_start_date, end_date: item_end_date)
-        item_start_date = item_end_date.next_day
-        result
-      end
-    end
+      price = renting_phase.price
+      price_per_day = renting_phase.price_per_day
 
-    def beyond_date?(date)
-      date > end_date
+      date_phases.map.with_index do |date_phase, i|
+        unit_price = price
+        units = 1
+        if (phase_num == i + 1) && !last_phase_completed?
+          days_in_phase = date_phase[:end_date] - date_phase[:start_date] + 1
+          unit_price = price_per_day
+          units = days_in_phase
+        end
+        date_phase[:total] = unit_price * units
+        date_phase[:units] = units
+        date_phase[:unit_price] = unit_price
+        self.line_items.create(date_phase)
+      end
     end
 end
