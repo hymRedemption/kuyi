@@ -4,6 +4,6 @@ FactoryGirl.define do
     end_date "2017-01-06"
     price "9.99"
     cycles 1
-    contract nil
+    association :contract
   end
 end
