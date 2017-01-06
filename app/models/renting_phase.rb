@@ -13,18 +13,66 @@ class RentingPhase < ApplicationRecord
 
   before_validation :set_invoice_num
 
+  def invoices
+    invoice_start_date = start_date
+    @invoices = invoice_num.times.map do |i|
+      months_later = (i + 1) * cycles
+      invoice_end_date = start_date.months_since(months_later)
+      if need_prev?(invoice_end_date)
+        invoice_end_date = invoice_end_date.prev_day
+      end
+      invoice_total = calculate_total(invoice_start_date, invoice_end_date)
+
+      invoice_end_date = end_date if beyond_date?(invoice_end_date)
+
+      invoice_params = {
+        start_date: invoice_start_date,
+        due_date: middle_of_prev_month(invoice_start_date),
+        end_date: invoice_end_date,
+        total: invoice_total
+      }
+
+      invoice = Invoice.create!(invoice_params)
+      invoice_start_date = invoice_end_date.next_day
+      invoice
+    end
+
+    @invoices
+  end
+
+  def beyond_date?(date)
+    date > end_date
+  end
+
+  def price_per_day
+    price * 12 / 365
+  end
+
+  def calculate_total(invoice_start_date, invoice_end_date)
+    days= end_date.mjd - invoice_start_date.mjd + 1
+    beyond_date?(invoice_end_date) ? (days * price_per_day) : price
+  end
+
+  def need_prev?(date)
+    start_date.mday == date.mday
+  end
+
   protected
 
-    def date_confirm
-      if start_date >  end_date
-        errors.add(:date_invalid, "start_date can't be later than end_date")
-      end
+  def date_confirm
+    if start_date >  end_date
+      errors.add(:date_invalid, "start_date can't be later than end_date")
     end
+  end
 
   private
 
-    def set_invoice_num
-      num = (1..12).find{ |i| start_date.months_since(i) >= end_date }
-      self.invoice_num = num
-    end
+  def middle_of_prev_month(date)
+    date.prev_month.beginning_of_month.days_since(14)
+  end
+
+  def set_invoice_num
+    num = (1..12).find{ |i| start_date.months_since(i * cycles) >= end_date }
+    self.invoice_num = num
+  end
 end
