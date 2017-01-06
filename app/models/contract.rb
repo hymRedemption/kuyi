@@ -46,7 +46,7 @@ class Contract < ApplicationRecord
   private
 
     def date_confirm
-      if start_date >  end_date
+      if start_date >=  end_date
         errors.add(:date_invalid, "start_date can't be later than end_date")
       end
     end

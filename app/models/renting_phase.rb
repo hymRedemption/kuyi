@@ -14,8 +14,12 @@ class RentingPhase < ApplicationRecord
   before_validation :set_invoice_num
 
   def invoices
+    Invoice.create!(self.invoices_params)
+  end
+
+  def invoices_params
     invoice_start_date = start_date
-    @invoices = invoice_num.times.map do |i|
+    result = (invoice_num - 1).times.map do |i|
       months_later = (i + 1) * cycles
       invoice_end_date = start_date.months_since(months_later)
       if need_prev?(invoice_end_date)
@@ -29,15 +33,12 @@ class RentingPhase < ApplicationRecord
         start_date: invoice_start_date,
         due_date: middle_of_prev_month(invoice_start_date),
         end_date: invoice_end_date,
-        total: invoice_total
+        total: invoice_total,
+        renting_phase: self,
       }
-
-      invoice = Invoice.create!(invoice_params)
       invoice_start_date = invoice_end_date.next_day
-      invoice
+      invoice_params
     end
-
-    @invoices
   end
 
   def beyond_date?(date)
@@ -60,7 +61,7 @@ class RentingPhase < ApplicationRecord
   protected
 
   def date_confirm
-    if start_date >  end_date
+    if start_date >=  end_date
       errors.add(:date_invalid, "start_date can't be later than end_date")
     end
   end
@@ -72,7 +73,8 @@ class RentingPhase < ApplicationRecord
   end
 
   def set_invoice_num
-    num = (1..12).find{ |i| start_date.months_since(i * cycles) >= end_date }
+    months_between = (end_date.mjd - start_date.mjd) / 29 + 1
+    num = (1..months_between).find{ |i| start_date.months_since(i * cycles) > end_date }
     self.invoice_num = num
   end
 end
