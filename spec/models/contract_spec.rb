@@ -8,5 +8,18 @@ RSpec.describe Contract, type: :model do
       contract = Contract.generate_contract(start_date: start_date, end_date: end_date, price: 100)
       expect(contract.is_a?(Contract)).to eq(true)
     end
+
+    it 'has same renting phases as we set' do
+      phase_num = 2
+      contract = Contract.generate_contract(start_date: start_date, end_date: end_date, price: 100, phase_num: phase_num)
+      expect(contract.renting_phases.count).to eq(2)
+    end
+
+    it 'has one renting phase if we do not set phase num' do
+      contract = Contract.generate_contract(start_date: start_date, end_date: end_date, price: 100)
+      expect(contract.renting_phases.count).to eq(1)
+    end
+
+
   end
 end
