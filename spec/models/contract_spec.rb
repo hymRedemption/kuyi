@@ -3,6 +3,7 @@ require 'rails_helper'
 RSpec.describe Contract, type: :model do
   let(:start_date) { Date.new(2000, 1, 31) }
   let(:end_date) { Date.new(2000, 10, 8) }
+
   it 'should invalid if end_date smaller than start_date' do
     contract = FactoryGirl.build(:contract, start_date: start_date, end_date: start_date.days_ago(2))
     expect(contract.valid?).to eq(false)
@@ -66,6 +67,12 @@ RSpec.describe Contract, type: :model do
           first_phase_end_date = params[:renting_phases].first[:end_date]
           params[:renting_phases][1][:end_date] = first_phase_end_date
           expect { Contract.generate_contract(params) }.to raise_error(Contract::TimeRangeError)
+        end
+
+        it 'should rollback if any error happens' do
+          params[:renting_phases][1][:cycles] = "invalid"
+          expect{ Contract.generate_contract(params) }.not_to change{ Contract.count }
+          expect{ Contract.generate_contract(params) }.not_to change{ RentingPhase.count }
         end
       end
     end
