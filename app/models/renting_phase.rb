@@ -19,7 +19,7 @@ class RentingPhase < ApplicationRecord
 
   def invoices_params
     invoice_start_date = start_date
-    result = (invoice_num - 1).times.map do |i|
+    invoice_num.times.map do |i|
       months_later = (i + 1) * cycles
       invoice_end_date = start_date.months_since(months_later)
       if need_prev?(invoice_end_date)
