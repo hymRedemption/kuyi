@@ -39,6 +39,10 @@ class Contract < ApplicationRecord
       end
   end
 
+  def generate_invoices
+    []
+  end
+
   private
 
     def date_confirm

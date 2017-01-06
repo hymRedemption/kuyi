@@ -9,31 +9,31 @@ RSpec.describe Contract, type: :model do
     expect(contract.valid?).to eq(false)
   end
 
-  context '.generate_contract' do
-    let(:params) do
-      {
-        start_date: start_date,
-        end_date: end_date,
-        renting_phases: [
-          {
-            end_date: Date.new(2000, 2, 29),
-            price: 100,
-            cycles: 1
-          },
-          {
-            end_date: Date.new(2000, 6, 10),
-            price: 200,
-            cycles: 3
-          },
-          {
-            end_date: end_date,
-            price: 300,
-            cycles: 2
-          }
-        ]
-      }
-    end
+  let(:params) do
+    {
+      start_date: start_date,
+      end_date: end_date,
+      renting_phases: [
+        {
+          end_date: Date.new(2000, 2, 29),
+          price: 100,
+          cycles: 1
+        },
+        {
+          end_date: Date.new(2000, 6, 10),
+          price: 200,
+          cycles: 3
+        },
+        {
+          end_date: end_date,
+          price: 300,
+          cycles: 2
+        }
+      ]
+    }
+  end
 
+  context '.generate_contract' do
     it 'generates contract' do
       contract = Contract.generate_contract(params)
       expect(contract.is_a?(Contract)).to eq(true)
@@ -76,6 +76,14 @@ RSpec.describe Contract, type: :model do
           expect{ Contract.generate_contract(params) }.not_to change{ RentingPhase.count }
         end
       end
+    end
+  end
+
+  context '#generate_invoices' do
+    let(:contract) { Contract.generate_contract(params) }
+    it 'returns a array' do
+      result = contract.generate_invoices
+      expect(result.respond_to?(:size)).to eq(true)
     end
   end
 end
