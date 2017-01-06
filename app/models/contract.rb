@@ -3,7 +3,7 @@ class Contract < ApplicationRecord
 
   validates :start_date, presence: true
   validates :end_date, presence: true
-  validate :date_comfirm
+  validate :date_confirm
 
   class << self
 
@@ -41,7 +41,7 @@ class Contract < ApplicationRecord
 
   private
 
-    def date_comfirm
+    def date_confirm
       if start_date >  end_date
         errors.add(:date_invalid, "start_date can't be later than end_date")
       end
