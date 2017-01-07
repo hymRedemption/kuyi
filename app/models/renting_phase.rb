@@ -11,7 +11,6 @@ class RentingPhase < ApplicationRecord
   validates :price, presence: true
   validates :price, numericality: { greater_than_or_equal_to: 0 }
   validates :invoice_num, presence: true
-
   validate :date_confirm
 
   before_validation :set_invoice_num
@@ -20,7 +19,9 @@ class RentingPhase < ApplicationRecord
     date_phases.map.with_index do |date_phase, i|
       total = price * cycles
       if (phase_num == i + 1) && !last_phase_completed?
-        total = piece_days * price_per_day + months_in_phases * price
+        date_phase_start = date_phase[:start_date]
+        date_phase_end = date_phase[:end_date]
+        total = piece_days * price_per_day + months_between_dates(date_phase_end, date_phase_start) * price
       end
       date_phase[:total] = total
       due_date = middle_of_prev_month(date_phase[:start_date])
@@ -38,7 +39,7 @@ class RentingPhase < ApplicationRecord
     price * 12 / 365
   end
 
-  protected
+  private
 
   def date_confirm
     if start_date >=  end_date
@@ -46,7 +47,6 @@ class RentingPhase < ApplicationRecord
     end
   end
 
-  private
 
   def set_invoice_num
     months_between = (end_date.mjd - start_date.mjd) / 29 + 1

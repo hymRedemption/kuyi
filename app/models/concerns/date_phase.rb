@@ -9,9 +9,13 @@ module DatePhase
       start_date.months_since( i * date_phase_unit) > end_date
     end
     if start_date.mday > days_of_month(end_date)
-      result = start_date.mday > end_date.mday ? result - 1 : result
+      result = start_date.months_since(result).mday == end_date.mday ? result - 1 : result
     end
     result
+  end
+
+  def end_of_month?(date)
+    date.mday == date.end_of_month.mday
   end
 
   def date_phases
@@ -42,23 +46,22 @@ module DatePhase
     date.end_of_month.mday
   end
 
-  def months_between_dates(date1, date2)
-    if same_month?(date1, date2)
-      days_between =  (date1.mday - date2.mday).abs + 1
-      return days_between == days_of_month(date1) ? 1 : 0
+  def months_between_dates(bigger_date, smaller_date)
+    if same_month?(bigger_date, smaller_date)
+      days_between =  (bigger_date.mday - smaller_date.mday).abs + 1
+      return days_between == days_of_month(bigger_date) ? 1 : 0
     end
-
-    num = date1.year * 12 + date1.month - date2.year * 12 - date2.month
+    num = bigger_date.year * 12 + bigger_date.month - smaller_date.year * 12 - smaller_date.month
     sign = 1
     if num < 0
-      date1, date2 = date2, date1
+      bigger_date, smaller_date = smaller_date, bigger_date
       sign = - 1
     end
 
-    if date1.mday > days_of_month(date2)
-      date1.mday >= date2.mday ? num : num -1
+    if smaller_date.mday > days_of_month(bigger_date)
+      smaller_date.mday >= bigger_date.mday ? num : num - 1
     else
-      if date1.mday - 1 <= date2.mday
+      if smaller_date.mday - 1 <= bigger_date.mday
         return num * sign
       else
         return (num - 1) * sign
