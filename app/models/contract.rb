@@ -7,23 +7,27 @@ class Contract < ApplicationRecord
 
   class << self
 
+    # @parmas
     def generate_contract(options)
-      opts = options.dup
-      start_date = opts[:start_date]
-      end_date = opts[:end_date]
-      contract = self.create!(start_date: start_date, end_date: end_date)
-      generate_phases(contract, opts)
-
-      return contract
+      Contract.transaction do
+        opts = options.dup
+        start_date = opts[:start_date]
+        end_date = opts[:end_date]
+        contract = self.create!(start_date: start_date, end_date: end_date)
+        generate_phases(contract, opts)
+        return contract
+      end
     end
 
     private
 
       def generate_phases(contract, options)
-        start_date = options[:start_date]
-        phases_params = options[:renting_phases]
-        set_phases_time!(start_date, phases_params)
-        contract.renting_phases.create!(phases_params)
+        Contract.transaction do
+          start_date = options[:start_date]
+          phases_params = options[:renting_phases]
+          set_phases_time!(start_date, phases_params)
+          contract.renting_phases.create!(phases_params)
+        end
       end
 
       def set_phases_time!(start_date, params_arry)
