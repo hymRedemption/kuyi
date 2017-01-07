@@ -66,7 +66,7 @@ RSpec.describe Contract, type: :model do
         it 'raise ArgumentError if end_date is earlier or equal than previous phase end_date' do
           first_phase_end_date = params[:renting_phases].first[:end_date]
           params[:renting_phases][1][:end_date] = first_phase_end_date
-          expect { Contract.generate_contract(params) }.to raise_error(Contract::TimeRangeError)
+          expect { Contract.generate_contract(params) }.to raise_error(Errors::TimeRangeError)
         end
 
         it 'should rollback if any error happens' do
@@ -84,6 +84,29 @@ RSpec.describe Contract, type: :model do
     it 'returns a array' do
       result = contract.generate_invoices
       expect(result.respond_to?(:size)).to eq(true)
+    end
+
+    it 'returns correct count of invoices' do
+      result = contract.generate_invoices
+      expect(result.size).to eq(5)
+    end
+
+    it 'returns with correct start_time' do
+      result = contract.generate_invoices
+      expect(result[0].start_date).to eq(start_date)
+      expect(result[1].start_date).to eq(Date.new(2000, 3, 1))
+      expect(result[2].start_date).to eq(Date.new(2000, 6, 1))
+      expect(result[3].start_date).to eq(Date.new(2000, 6, 11))
+      expect(result[4].start_date).to eq(Date.new(2000, 8, 11))
+    end
+
+    it 'returns with correct total' do
+      result = contract.generate_invoices
+      expect(result[0].total).to eq(100)
+      expect(result[1].total).to eq(3 * 200)
+      expect(result[2].total.floor).to eq((200.0 * 12 /365 * 11).floor)
+      expect(result[3].total).to eq(300 * 2)
+      expect(result[4].total.floor).to eq((300 + 300.0 * 12 /365 * 29).floor)
     end
   end
 end

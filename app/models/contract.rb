@@ -40,7 +40,7 @@ class Contract < ApplicationRecord
   end
 
   def generate_invoices
-    []
+    renting_phases.map(&:invoices).flatten
   end
 
   private
@@ -50,6 +50,4 @@ class Contract < ApplicationRecord
         errors.add(:date_invalid, "start_date can't be later than end_date")
       end
     end
-
-    class TimeRangeError < ArgumentError; end
 end
