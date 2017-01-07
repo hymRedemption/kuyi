@@ -7,7 +7,28 @@ class Contract < ApplicationRecord
 
   class << self
 
-    # @parmas
+    # @param options [Hash] Attrs for setup.
+    # == Example
+    #   params = {
+    #    start_date : Date.new(1999, 1,1)
+    #    end_date: Date,new(1999, 12, 12)
+    #    renting_phases: [
+    #     {
+    #      end_date: Date.new(1999, 2, 3),
+    #      price: 199,
+    #      cycles: 1
+    #     },
+    #     {
+    #      end_date: Date.new(1999, 4, 5),
+    #      cycles: 2,
+    #      price: 2,
+    #     },
+    #     {
+    #      end_date: Date.new(1999, 12, 12),
+    #      price:2,
+    #     }
+    #    ]
+    #   }
     def generate_contract(options)
       Contract.transaction do
         opts = options.dup
