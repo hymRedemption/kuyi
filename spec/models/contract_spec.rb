@@ -70,10 +70,19 @@ RSpec.describe Contract, type: :model do
         end
 
         it 'should rollback if any error happens' do
-          skip
           params[:renting_phases][1][:cycles] = "invalid"
-          expect{ Contract.generate_contract(params) }.not_to change{ Contract.count }
-          expect{ Contract.generate_contract(params) }.not_to change{ RentingPhase.count }
+          expect do
+            begin
+              Contract.generate_contract(params)
+            rescue => ActiveRecord::RecordInvalid
+            end
+          end.not_to change{ Contract.count }
+          expect do
+            begin
+              Contract.generate_contract(params)
+            rescue => ActiveRecord::RecordInvalid
+            end
+          end.not_to change{ RentingPhase.count }
         end
       end
     end

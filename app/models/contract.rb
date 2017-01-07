@@ -57,7 +57,7 @@ class Contract < ApplicationRecord
           params[:start_date] = next_phase_start_date
           phase_end_date = params[:end_date]
           if !(next_phase_start_date && phase_end_date) || (next_phase_start_date > phase_end_date)
-            raise TimeRangeError
+            raise Errors::TimeRangeError
           end
           next_phase_start_date = phase_end_date.days_since(1)
         end
