@@ -1,4 +1,7 @@
 class RentingPhase < ApplicationRecord
+
+  include DatePhase
+
   belongs_to :contract
 
   validates :start_date, presence: true
@@ -14,48 +17,25 @@ class RentingPhase < ApplicationRecord
   before_validation :set_invoice_num
 
   def invoices
-    Invoice.create!(self.invoices_params)
-  end
-
-  def invoices_params
-    invoice_start_date = start_date
-    invoice_num.times.map do |i|
-      months_later = (i + 1) * cycles
-      invoice_end_date = start_date.months_since(months_later)
-      if need_prev?(invoice_end_date)
-        invoice_end_date = invoice_end_date.prev_day
+    date_phases.map.with_index do |date_phase, i|
+      total = price * cycles
+      if (phase_num == i + 1) && !last_phase_completed?
+        total = piece_days * price_per_day + months_in_phases * price
       end
-      invoice_total = calculate_total(invoice_start_date, invoice_end_date)
-
-      invoice_end_date = end_date if beyond_date?(invoice_end_date)
-
-      invoice_params = {
-        start_date: invoice_start_date,
-        due_date: middle_of_prev_month(invoice_start_date),
-        end_date: invoice_end_date,
-        total: invoice_total,
-        renting_phase: self,
-      }
-      invoice_start_date = invoice_end_date.next_day
-      invoice_params
+      date_phase[:total] = total
+      due_date = middle_of_prev_month(date_phase[:start_date])
+      date_phase[:due_date] = due_date
+      date_phase[:renting_phase] = self
+      Invoice.create!(date_phase)
     end
   end
 
-  def beyond_date?(date)
-    date > end_date
+  def date_phase_unit
+    self.cycles
   end
 
   def price_per_day
     price * 12 / 365
-  end
-
-  def calculate_total(invoice_start_date, invoice_end_date)
-    days= end_date.mjd - invoice_start_date.mjd + 1
-    beyond_date?(invoice_end_date) ? (days * price_per_day) : price
-  end
-
-  def need_prev?(date)
-    start_date.mday == date.mday
   end
 
   protected
@@ -67,10 +47,6 @@ class RentingPhase < ApplicationRecord
   end
 
   private
-
-  def middle_of_prev_month(date)
-    date.prev_month.beginning_of_month.days_since(14)
-  end
 
   def set_invoice_num
     months_between = (end_date.mjd - start_date.mjd) / 29 + 1
