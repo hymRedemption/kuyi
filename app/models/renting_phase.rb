@@ -10,10 +10,7 @@ class RentingPhase < ApplicationRecord
   validates :cycles, numericality: { only_integer: true, greater_than: 0 }
   validates :price, presence: true
   validates :price, numericality: { greater_than_or_equal_to: 0 }
-  validates :invoice_num, presence: true
   validate :date_confirm
-
-  before_validation :set_invoice_num
 
   def invoices
     date_phases.map.with_index do |date_phase, i|
@@ -45,12 +42,5 @@ class RentingPhase < ApplicationRecord
     if start_date >=  end_date
       errors.add(:date_invalid, "start_date can't be later than end_date")
     end
-  end
-
-
-  def set_invoice_num
-    months_between = (end_date.mjd - start_date.mjd) / 29 + 1
-    num = (1..months_between).find{ |i| start_date.months_since(i * cycles) > end_date }
-    self.invoice_num = num
   end
 end

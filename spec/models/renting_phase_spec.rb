@@ -1,28 +1,6 @@
 require 'rails_helper'
 
 RSpec.describe RentingPhase, type: :model do
-  context '#invoice_num' do
-
-    it 'sets invoice_num correctly' do
-      start_date = Date.new(1999, 12, 31)
-      end_date = Date.new(2000, 1, 31)
-      renting_phase = FactoryGirl.create(:renting_phase,
-                                         start_date: start_date,
-                                         end_date: end_date,
-                                         cycles: 1 )
-      expect(renting_phase.invoice_num).to eq(2)
-    end
-
-    it 'sets invoice_num correctly when set cycles 2' do
-      start_date = Date.new(1999, 12, 30)
-      end_date = Date.new(2000, 7, 31)
-      renting_phase = FactoryGirl.create(:renting_phase,
-                                         start_date: start_date,
-                                         end_date: end_date,
-                                         cycles: 2 )
-      expect(renting_phase.invoice_num).to eq(4)
-    end
-  end
 
   context '#invoices' do
     context 'cycles 1' do

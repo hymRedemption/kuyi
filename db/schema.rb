@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170106152616) do
+ActiveRecord::Schema.define(version: 20170107053628) do
 
   create_table "contracts", force: :cascade do |t|
     t.date     "start_date"
@@ -50,7 +50,6 @@ ActiveRecord::Schema.define(version: 20170106152616) do
     t.integer  "contract_id"
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
-    t.integer  "invoice_num"
     t.index ["contract_id"], name: "index_renting_phases_on_contract_id"
   end
 
