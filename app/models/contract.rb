@@ -26,9 +26,11 @@ class Contract < ApplicationRecord
     #     {
     #      end_date: Date.new(1999, 12, 12),
     #      price:2,
+    #      cycles: 1
     #     }
     #    ]
     #   }
+    #   Controct.generate_contract(params)
     def generate_contract(options)
       Contract.transaction do
         opts = options.dup
