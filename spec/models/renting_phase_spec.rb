@@ -14,12 +14,6 @@ RSpec.describe RentingPhase, type: :model do
         }
       end
 
-      it 'returns same num invoices as invoice_num' do
-        renting_phase = FactoryGirl.create(:renting_phase, phase_params)
-        invoices = renting_phase.invoices
-        expect(invoices.size).to eq(renting_phase.invoice_num)
-      end
-
       it 'returns all correct invoices' do
         renting_phase = FactoryGirl.create(:renting_phase, phase_params)
         invoices = renting_phase.invoices
@@ -52,12 +46,6 @@ RSpec.describe RentingPhase, type: :model do
           end_date: end_date,
           cycles: 2
         }
-      end
-
-      it 'returns same num invoices as invoice_num' do
-        renting_phase = FactoryGirl.create(:renting_phase, phase_params)
-        invoices = renting_phase.invoices
-        expect(invoices.size).to eq(renting_phase.invoice_num)
       end
 
       it 'returns all correct invoices' do
