@@ -101,7 +101,7 @@ RSpec.describe DatePhase do
       smaller_date = Date.new(2000, 1, 10)
       bigger_date = Date.new(2000, 2, 29)
       num = instance.scattered_days_between(smaller_date, bigger_date)
-      expect(num).to eq(10)
+      expect(num).to eq(20)
     end
   end
 
