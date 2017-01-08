@@ -14,27 +14,23 @@ module DatePhase
       sign = -1
     end
 
+    months_num = absolut_months_between(smaller_date, bigger_date)
+
     if same_month?(smaller_date, bigger_date)
-      return sign * 1 if end_of_month?(bigger_date) && beginning_of_month?(smaller_date)
-      return 0
-    end
-
-    bigger_days = days_in_month(bigger_date)
-    num = bigger_date.year * 12 + bigger_date.month - smaller_date.year * 12 - smaller_date.month
-
-    if smaller_date.mday > bigger_days
-      return sign * num if end_of_month?(bigger_date)
-      return sign * (num - 1)
+      return sign * 1 if monthlong?(smaller_date, bigger_date)
     else
-      if smaller_date.months_since(num).prev_day <= bigger_date
-        return sign * num
-      else
-        return sign * (num - 1)
-      end
+      return sign * (months_num - 1) if !monthlong?(smaller_date, bigger_date)
     end
+
+    sign * months_num
   end
 
-  def days_in_month(date)
+  def enough_days?(smaller_date, bigger_date)
+    days = days_in_this_month(bigger_date)
+    smaller_date.mday > days
+  end
+
+  def days_in_this_month(date)
     date.end_of_month.mday
   end
 
@@ -45,6 +41,35 @@ module DatePhase
   def beginning_of_month?(date)
     date == date.beginning_of_month
   end
+
+  private
+
+    def monthlong?(smaller_date, bigger_date)
+      if same_month?(smaller_date, bigger_date)
+        monthlong_in_same_month?(smaller_date, bigger_date)
+      else
+        monthlong_in_different_month?(smaller_date, bigger_date)
+      end
+    end
+
+    def monthlong_in_different_month?(smaller_date, bigger_date)
+      months_num = absolut_months_between(smaller_date, bigger_date)
+      if enough_days?(smaller_date, bigger_date)
+        return false if !end_of_month?(bigger_date)
+      else
+        return false if smaller_date.months_since(months_num).prev_day > bigger_date
+      end
+      true
+    end
+
+    def monthlong_in_same_month?(smaller_date, bigger_date)
+      return false unless end_of_month?(bigger_date) && beginning_of_month?(smaller_date)
+      true
+    end
+
+    def absolut_months_between(smaller_date, bigger_date)
+      bigger_date.year * 12 + bigger_date.month - smaller_date.year * 12 - smaller_date.month
+    end
 end
 
 =begin
