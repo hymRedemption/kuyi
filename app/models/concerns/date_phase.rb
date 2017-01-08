@@ -3,6 +3,51 @@ require 'active_support/concern'
 module DatePhase
   extend ActiveSupport::Concern
 
+  def same_month?(date1, date2)
+    date1.year == date2.year && date1.month == date2.month
+  end
+
+  def months_between(smaller_date, bigger_date)
+    sign = 1
+    if smaller_date > bigger_date
+      smaller_date, bigger_date = bigger_date, smaller_date
+      sign = -1
+    end
+
+    if same_month?(smaller_date, bigger_date)
+      return sign * 1 if end_of_month?(bigger_date) && beginning_of_month?(smaller_date)
+      return 0
+    end
+
+    bigger_days = days_in_month(bigger_date)
+    num = bigger_date.year * 12 + bigger_date.month - smaller_date.year * 12 - smaller_date.month
+
+    if smaller_date.mday > bigger_days
+      return sign * num if end_of_month?(bigger_date)
+      return sign * (num - 1)
+    else
+      if smaller_date.months_since(num).prev_day <= bigger_date
+        return sign * num
+      else
+        return sign * (num - 1)
+      end
+    end
+  end
+
+  def days_in_month(date)
+    date.end_of_month.mday
+  end
+
+  def end_of_month?(date)
+    date == date.end_of_month
+  end
+
+  def beginning_of_month?(date)
+    date == date.beginning_of_month
+  end
+end
+
+=begin
   def phase_num
     months_between = (end_date.mjd - start_date.mjd) / 29 + 1
     result = (1..months_between).find do |i|
@@ -79,12 +124,9 @@ module DatePhase
     end_date.mjd - start_date.months_since(months_in_phases).prev_day.mjd + 1
   end
 
-  def same_month?(date1, date2)
-    date1.year == date2.year && date1.month == date2.month
-  end
 
   def days_not_enough?(date)
     days_num = date.mday
     (start_date.mday > days_num) && (date.end_of_month.mday == days_num)
   end
-end
+=end
