@@ -6,22 +6,36 @@ RSpec.describe DatePhase do
   let(:instance) { include_klass.new }
   context '#months_between' do
     context 'in the same month' do
-      it 'returns 1 when is a month' do
+      it 'returns right num if begin at month first date and end at month end day' do
         smaller_date = Date.new(2000, 1, 1)
-        bigger_date = Date.new(2000, 1, 31)
+        bigger_date = Date.new(2000, 3, 31)
+        num = instance.months_between(smaller_date, bigger_date)
+        expect(num).to eq(3)
+      end
+
+      it 'returns right num for special' do
+        smaller_date = Date.new(2000, 1, 31)
+        bigger_date = Date.new(2000, 2, 29)
         num = instance.months_between(smaller_date, bigger_date)
         expect(num).to eq(1)
       end
 
-      it 'returns 0 when is not enough for a month' do
-        smaller_date = Date.new(2000, 1, 1)
-        bigger_date = Date.new(2000, 1, 29)
+      it 'returns right num if when is a month' do
+        smaller_date = Date.new(2000, 1, 2)
+        bigger_date = Date.new(2000, 1, 14)
         num = instance.months_between(smaller_date, bigger_date)
         expect(num).to eq(0)
       end
+
+      it 'returns right num if when is not in a month' do
+        smaller_date = Date.new(2000, 1, 2)
+        bigger_date = Date.new(2000, 3, 14)
+        num = instance.months_between(smaller_date, bigger_date)
+        expect(num).to eq(2)
+      end
     end
 
-    context 'not in the different month' do
+    context 'in the different month' do
       it 'returns correct num when in different year' do
         smaller_date = Date.new(1999, 12, 30)
         bigger_date = Date.new(2000, 2, 29)
@@ -44,10 +58,10 @@ RSpec.describe DatePhase do
       end
 
       it 'returns correct num when middle date is specifal' do
-        smaller_date = Date.new(2000, 1, 30)
-        bigger_date = Date.new(2000, 3, 5)
+        smaller_date = Date.new(2000, 1, 1)
+        bigger_date = Date.new(2000, 3, 31)
         num = instance.months_between(smaller_date, bigger_date)
-        expect(num).to eq(1)
+        expect(num).to eq(3)
       end
     end
   end

@@ -12,8 +12,9 @@ module DatePhase
 
     months_num = absolut_months_between(smaller_date, bigger_date)
 
-    if same_month?(smaller_date, bigger_date)
-      return sign * 1 if !same_as_absolute_month?(smaller_date, bigger_date)
+    # TODO need to refactor the name
+    if beginning_of_month?(smaller_date) && end_of_month?(bigger_date)
+      return sign * (months_num + 1)
     else
       return sign * (months_num - 1) if !same_as_absolute_month?(smaller_date, bigger_date)
     end
@@ -48,7 +49,7 @@ module DatePhase
         !monthlong?(smaller_date, bigger_date)
       else
         months_num = absolut_months_between(smaller_date, bigger_date)
-        if enough_days?(smaller_date, bigger_date)
+        if !enough_days?(smaller_date, bigger_date)
           return false if !end_of_month?(bigger_date)
         else
           return false if smaller_date.months_since(months_num).prev_day > bigger_date
@@ -68,7 +69,7 @@ module DatePhase
 
     def enough_days?(smaller_date, bigger_date)
       days = days_in_this_month(bigger_date)
-      smaller_date.mday > days
+      smaller_date.mday < days
     end
 
     def days_in_this_month(date)
@@ -85,7 +86,7 @@ module DatePhase
 
     def monthlong_in_different_month?(smaller_date, bigger_date)
       months_num = absolut_months_between(smaller_date, bigger_date)
-      if enough_days?(smaller_date, bigger_date)
+      if !enough_days?(smaller_date, bigger_date)
         return false if !end_of_month?(bigger_date)
       else
         return false if smaller_date.months_since(months_num).prev_day != bigger_date
