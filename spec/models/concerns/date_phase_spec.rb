@@ -42,6 +42,66 @@ RSpec.describe DatePhase do
         num = instance.months_between(smaller_date, bigger_date)
         expect(num).to eq(0)
       end
+
+      it 'returns correct num when middle date is specifal' do
+        smaller_date = Date.new(2000, 1, 30)
+        bigger_date = Date.new(2000, 3, 5)
+        num = instance.months_between(smaller_date, bigger_date)
+        expect(num).to eq(1)
+      end
+    end
+  end
+
+  context '#monthlong?' do
+    context 'same month' do
+      it 'returns true if days between dates is a whole month' do
+        smaller_date = Date.new(2000, 1, 1)
+        bigger_date = Date.new(2000, 1, 31)
+        expect(instance.monthlong?(smaller_date, bigger_date)).to eq(true)
+      end
+
+      it 'returns false if days between is not enough' do
+        smaller_date = Date.new(2000, 1, 1)
+        bigger_date = Date.new(2000, 1, 3)
+        expect(instance.monthlong?(smaller_date, bigger_date)).to eq(false)
+      end
+    end
+
+    context 'different month' do
+      it 'returns true if days between is whole month' do
+        smaller_date = Date.new(1999, 12, 30)
+        bigger_date = Date.new(2000, 2, 29)
+        expect(instance.monthlong?(smaller_date, bigger_date)).to eq(true)
+      end
+
+      it 'returns false if days between is not enough' do
+        smaller_date = Date.new(1999, 12, 30)
+        bigger_date = Date.new(2000, 2, 28)
+        expect(instance.monthlong?(smaller_date, bigger_date)).to eq(false)
+      end
+    end
+  end
+
+  context '#scattered_days_between' do
+    it 'retuns 0 if the dates between is monthlong' do
+      smaller_date = Date.new(2000, 1, 31)
+      bigger_date = Date.new(2000, 2, 29)
+      num = instance.scattered_days_between(smaller_date, bigger_date)
+      expect(num).to eq(0)
+    end
+
+    it 'returns the scattered days num between dates that in a month' do
+      smaller_date = Date.new(2000, 1, 10)
+      bigger_date = Date.new(2000, 1, 29)
+      num = instance.scattered_days_between(smaller_date, bigger_date)
+      expect(num).to eq(20)
+    end
+
+    it 'returns days num between dates that not in a month' do
+      smaller_date = Date.new(2000, 1, 10)
+      bigger_date = Date.new(2000, 2, 29)
+      num = instance.scattered_days_between(smaller_date, bigger_date)
+      expect(num).to eq(10)
     end
   end
 
