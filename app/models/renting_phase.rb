@@ -1,7 +1,5 @@
 class RentingPhase < ApplicationRecord
 
-  include DatePhase
-
   belongs_to :contract
 
   validates :start_date, presence: true
@@ -13,17 +11,17 @@ class RentingPhase < ApplicationRecord
   validate :date_confirm
 
   def cycles_num
-    if monthlong?(start_date, end_date)
-      return (months_between(start_date, end_date).to_f / cycles).ceil
+    if start_date.integral_months_to?(end_date)
+      (start_date.integral_months_to(end_date).to_f / cycles).ceil
     else
-      return ((months_between(start_date, end_date).to_f + 1 )/ cycles).ceil
+      ((start_date.integral_months_to(end_date).to_f + 1 )/ cycles).ceil
     end
   end
 
   def time_ranges_of_cycles
     start_date_of_range = start_date
     result = cycles_num.times.map do |i|
-      end_date_of_range = monthlong_end_date_since((i + 1) * cycles, start_date)
+      end_date_of_range = start_date.integral_months_end_date_since((i + 1) * cycles)
       time_range = {
         start_date: start_date_of_range,
         end_date: end_date_of_range
@@ -38,11 +36,11 @@ class RentingPhase < ApplicationRecord
   def invoices
     time_ranges_of_cycles.map do |time_range|
       total = price * cycles
-      due_date = middle_of_prev_month(time_range[:start_date])
+      due_date = time_range[:start_date].middle_of_prev_month
       invoice_start_date = time_range[:start_date]
       invoice_end_date = time_range[:end_date]
-      if !monthlong?(invoice_start_date, invoice_end_date)
-        total = scattered_days_between(invoice_start_date, invoice_end_date) * price_per_day + months_between(invoice_start_date, invoice_end_date) * price
+      if !invoice_start_date.integral_months_to?(invoice_end_date)
+        total = invoice_start_date.scattered_days_to(invoice_end_date) * price_per_day + invoice_start_date.integral_months_to(invoice_end_date) * price
       end
       invoice_param = {
         total: total,
@@ -53,10 +51,6 @@ class RentingPhase < ApplicationRecord
       }
       Invoice.create!(invoice_param)
     end
-  end
-
-  def date_phase_unit
-    self.cycles
   end
 
   def price_per_day

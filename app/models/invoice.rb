@@ -1,5 +1,4 @@
 class Invoice < ApplicationRecord
-  include DatePhase
 
   has_many :line_items
   belongs_to :renting_phase
@@ -12,17 +11,17 @@ class Invoice < ApplicationRecord
   #after_save :set_line_items
 
   def items_num
-    if monthlong?(start_date, end_date)
-      months_between(start_date, end_date)
-    else
-      months_between(start_date, end_date) + 1
+    integral_months = start_date.integral_months_to(end_date)
+    if !start_date.integral_months_to?(end_date)
+      integral_months = integral_months + 1
     end
+    integral_months
   end
 
   def time_ranges_of_items
     start_date_of_range = start_date
     result = items_num.times.map do |i|
-      end_date_of_range = monthlong_end_date_since(i + 1, start_date)
+      end_date_of_range = start_date.integral_months_end_date_since(i + 1)
       time_range = {
         start_date: start_date_of_range,
         end_date: end_date_of_range
@@ -41,8 +40,8 @@ class Invoice < ApplicationRecord
       item_end_date = time_range[:end_date]
       units = 1
       unit_price = renting_phase.price
-      if !monthlong?(item_start_date, item_end_date)
-        units = scattered_days_between(item_start_date, item_end_date)
+      if !item_start_date.integral_months_to?(item_end_date)
+        units = item_start_date.scattered_days_to(item_end_date)
         unit_price = renting_phase.price_per_day
       end
       total = units * unit_price
@@ -57,29 +56,4 @@ class Invoice < ApplicationRecord
       LineItem.create(item_params)
     end
   end
-
-  private
-
-    def date_phase_unit
-      1
-    end
-
-    def set_line_items
-      price = renting_phase.price
-      price_per_day = renting_phase.price_per_day
-
-      date_phases.map.with_index do |date_phase, i|
-        unit_price = price
-        units = 1
-        if (phase_num == i + 1) && !last_phase_completed?
-          days_in_phase = date_phase[:end_date] - date_phase[:start_date] + 1
-          unit_price = price_per_day
-          units = days_in_phase
-        end
-        date_phase[:total] = unit_price * units
-        date_phase[:units] = units
-        date_phase[:unit_price] = unit_price
-        self.line_items.create(date_phase)
-      end
-    end
 end

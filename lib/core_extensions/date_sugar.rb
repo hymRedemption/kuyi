@@ -34,9 +34,9 @@ module CoreExtensions
     def scattered_days_to(date)
       sign, smaller_date, bigger_date = *order_with(date)
       return 0 if smaller_date.integral_months_to?(bigger_date)
-      months_diff = smaller_date.months_diff_to(bigger_date)
+      integral_months = smaller_date.integral_months_to(bigger_date)
 
-      first_scattered_date = smaller_date.months_since(months_diff)
+      first_scattered_date = smaller_date.months_since(integral_months)
       if smaller_date.integral_months_to?(first_scattered_date)
         first_scattered_date = first_scattered_date.next_day
       end
