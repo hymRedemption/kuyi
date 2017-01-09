@@ -24,52 +24,6 @@ RSpec.describe Invoice, type: :model do
                        renting_phase: renting_phase)
   end
 
-  context '#item_num' do
-    it 'returns the correct items num when dates is monthlong' do
-      expect(invoice_with_monthlong.items_num).to eq(2)
-    end
-
-    it 'returns the correct items num when dates is not monthlong' do
-      expect(invoice_not_monthlong.items_num).to eq(3)
-    end
-  end
-
-  context '#tiem_ranges_of_items' do
-    it 'returns the correct ranges when dates is monthlong' do
-      time_ranges = invoice_with_monthlong.time_ranges_of_items
-      result_expect = [
-        {
-          start_date: Date.new(2000, 1, 1),
-          end_date: Date.new(2000, 1, 31)
-        },
-        {
-          start_date: Date.new(2000, 2, 1),
-          end_date: Date.new(2000, 2, 29)
-        }
-      ]
-      expect(time_ranges).to eq(result_expect)
-    end
-
-    it 'returns correct ranges when dates is not monthlong' do
-      time_ranges = invoice_not_monthlong.time_ranges_of_items
-      result_expect = [
-        {
-          start_date: Date.new(1999, 12, 31),
-          end_date: Date.new(2000, 1, 30)
-        },
-        {
-          start_date: Date.new(2000, 1, 31),
-          end_date: Date.new(2000, 2, 29)
-        },
-        {
-          start_date: Date.new(2000, 3, 1),
-          end_date: Date.new(2000, 3, 12)
-        }
-      ]
-      expect(time_ranges).to eq(result_expect)
-    end
-  end
-
   context '#generate_items' do
     it 'returns right items when dates is monthlong' do
       items = invoice_with_monthlong.generate_items

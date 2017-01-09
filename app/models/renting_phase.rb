@@ -1,5 +1,7 @@
 class RentingPhase < ApplicationRecord
 
+  include DatePhase
+
   belongs_to :contract
 
   validates :start_date, presence: true
@@ -10,31 +12,12 @@ class RentingPhase < ApplicationRecord
   validates :price, numericality: { greater_than_or_equal_to: 0 }
   validate :date_confirm
 
-  def cycles_num
-    if start_date.integral_months_to?(end_date)
-      (start_date.integral_months_to(end_date).to_f / cycles).ceil
-    else
-      ((start_date.integral_months_to(end_date).to_f + 1 )/ cycles).ceil
-    end
-  end
-
-  def time_ranges_of_cycles
-    start_date_of_range = start_date
-    result = cycles_num.times.map do |i|
-      end_date_of_range = start_date.integral_months_end_date_since((i + 1) * cycles)
-      time_range = {
-        start_date: start_date_of_range,
-        end_date: end_date_of_range
-      }
-      start_date_of_range = end_date_of_range.next_day
-      time_range
-    end
-    result.last[:end_date] = end_date
-    result
+  def months_in_phase
+    cycles
   end
 
   def invoices
-    time_ranges_of_cycles.map do |time_range|
+    time_ranges_of_phases.map do |time_range|
       total = price * cycles
       due_date = time_range[:start_date].middle_of_prev_month
       invoice_start_date = time_range[:start_date]
