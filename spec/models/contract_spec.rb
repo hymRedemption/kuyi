@@ -113,9 +113,9 @@ RSpec.describe Contract, type: :model do
       result = contract.generate_invoices
       expect(result[0].total).to eq(100)
       expect(result[1].total).to eq(3 * 200)
-      expect(result[2].total.floor).to eq((200.0 * 12 /365 * 11).floor)
+      expect(result[2].total.floor).to eq((200.0 * 12 /365 * 10).floor)
       expect(result[3].total).to eq(300 * 2)
-      expect(result[4].total.floor).to eq((300 + 300.0 * 12 /365 * 29).floor)
+      expect(result[4].total.floor).to eq((300 + 300.0 * 12 /365 * 28).floor)
     end
   end
 end
