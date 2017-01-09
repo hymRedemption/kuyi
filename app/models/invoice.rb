@@ -35,6 +35,27 @@ class Invoice < ApplicationRecord
   end
 
   def generate_items
+    time_ranges_of_items.map do |time_range|
+      total = renting_phase.price
+      item_start_date = time_range[:start_date]
+      item_end_date = time_range[:end_date]
+      units = 1
+      unit_price = renting_phase.price
+      if !monthlong?(item_start_date, item_end_date)
+        units = scattered_days_between(item_start_date, item_end_date)
+        unit_price = renting_phase.price_per_day
+      end
+      total = units * unit_price
+      item_params = {
+        start_date: item_start_date,
+        end_date: item_end_date,
+        unit_price: unit_price,
+        units: units,
+        total: total,
+        invoice: self
+      }
+      LineItem.create(item_params)
+    end
   end
 
   private
