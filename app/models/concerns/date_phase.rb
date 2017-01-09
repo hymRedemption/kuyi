@@ -10,16 +10,22 @@ module DatePhase
   def months_between(smaller_date, bigger_date)
     sign, smaller_date, bigger_date = *order_the_date(smaller_date, bigger_date)
 
-    months_num = absolut_months_between(smaller_date, bigger_date)
+    months_num = months_diff_between(smaller_date, bigger_date)
 
-    # TODO need to refactor the name
     if beginning_of_month?(smaller_date) && end_of_month?(bigger_date)
       return sign * (months_num + 1)
-    else
-      return sign * (months_num - 1) if !same_as_absolute_month?(smaller_date, bigger_date)
     end
 
+    return sign * (months_num - 1) if less_than_months_diff?(smaller_date, bigger_date)
+
     sign * months_num
+  end
+
+  def monthlong_end_date_since(num, date)
+    predict_end_date = date.months_since(num)
+    return predict_end_date if monthlong?(date, predict_end_date)
+
+    predict_end_date.prev_day
   end
 
   def scattered_days_between(smaller_date, bigger_date)
@@ -41,67 +47,63 @@ module DatePhase
     end
   end
 
+  def middle_of_prev_month(date)
+    date.prev_month.beginning_of_month.days_since(14)
+  end
 
   private
 
-    def same_as_absolute_month?(smaller_date, bigger_date)
-      if same_month?(smaller_date, bigger_date)
-        !monthlong?(smaller_date, bigger_date)
-      else
-        months_num = absolut_months_between(smaller_date, bigger_date)
-        if !enough_days?(smaller_date, bigger_date)
-          return false if !end_of_month?(bigger_date)
-        else
-          return false if smaller_date.months_since(months_num).prev_day > bigger_date
-        end
-        true
-      end
+  def less_than_months_diff?(smaller_date, bigger_date)
+    if !same_month?(smaller_date, bigger_date) && !monthlong?(smaller_date, bigger_date)
+      return true if smaller_date.mday > bigger_date.mday
     end
+    false
+  end
 
-    def order_the_date(smaller_date, bigger_date)
-      sign = 1
-      if smaller_date > bigger_date
-        sign = -1
-        smaller_date, bigger_date = bigger_date, smaller_date
-      end
-      [sign, smaller_date, bigger_date]
+  def order_the_date(smaller_date, bigger_date)
+    sign = 1
+    if smaller_date > bigger_date
+      sign = -1
+      smaller_date, bigger_date = bigger_date, smaller_date
     end
+    [sign, smaller_date, bigger_date]
+  end
 
-    def enough_days?(smaller_date, bigger_date)
-      days = days_in_this_month(bigger_date)
-      smaller_date.mday < days
-    end
+  def enough_days?(smaller_date, bigger_date)
+    days = days_in_this_month(bigger_date)
+    smaller_date.mday <= days
+  end
 
-    def days_in_this_month(date)
-      date.end_of_month.mday
-    end
+  def days_in_this_month(date)
+    date.end_of_month.mday
+  end
 
-    def end_of_month?(date)
-      date == date.end_of_month
-    end
+  def end_of_month?(date)
+    date == date.end_of_month
+  end
 
-    def beginning_of_month?(date)
-      date == date.beginning_of_month
-    end
+  def beginning_of_month?(date)
+    date == date.beginning_of_month
+  end
 
-    def monthlong_in_different_month?(smaller_date, bigger_date)
-      months_num = absolut_months_between(smaller_date, bigger_date)
-      if !enough_days?(smaller_date, bigger_date)
-        return false if !end_of_month?(bigger_date)
-      else
-        return false if smaller_date.months_since(months_num).prev_day != bigger_date
-      end
-      true
+  def monthlong_in_different_month?(smaller_date, bigger_date)
+    months_num = months_diff_between(smaller_date, bigger_date)
+    if !enough_days?(smaller_date, bigger_date)
+      return false if !end_of_month?(bigger_date)
+    else
+      return false if smaller_date.months_since(months_num).prev_day != bigger_date
     end
+    true
+  end
 
-    def monthlong_in_same_month?(smaller_date, bigger_date)
-      return false unless end_of_month?(bigger_date) && beginning_of_month?(smaller_date)
-      true
-    end
+  def monthlong_in_same_month?(smaller_date, bigger_date)
+    return false unless end_of_month?(bigger_date) && beginning_of_month?(smaller_date)
+    true
+  end
 
-    def absolut_months_between(smaller_date, bigger_date)
-      bigger_date.year * 12 + bigger_date.month - smaller_date.year * 12 - smaller_date.month
-    end
+  def months_diff_between(smaller_date, bigger_date)
+    bigger_date.year * 12 + bigger_date.month - smaller_date.year * 12 - smaller_date.month
+  end
 end
 
 =begin

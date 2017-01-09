@@ -35,6 +35,18 @@ RSpec.describe DatePhase do
       end
     end
 
+    context '#monthlong_end_date_since' do
+      it 'returns right end date if days in predict month is not enough' do
+        date = instance.monthlong_end_date_since(1, Date.new(2000, 1, 31))
+        expect(date).to eq(Date.new(2000, 2, 29))
+      end
+
+      it 'returns right end date if days in predict month is enough' do
+        date = instance.monthlong_end_date_since(1, Date.new(2000, 1, 29))
+        expect(date).to eq(Date.new(2000, 2, 28))
+      end
+    end
+
     context 'in the different month' do
       it 'returns correct num when in different year' do
         smaller_date = Date.new(1999, 12, 30)

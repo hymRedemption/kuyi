@@ -12,19 +12,46 @@ class RentingPhase < ApplicationRecord
   validates :price, numericality: { greater_than_or_equal_to: 0 }
   validate :date_confirm
 
+  def cycles_num
+    if monthlong?(start_date, end_date)
+      return (months_between(start_date, end_date).to_f / cycles).ceil
+    else
+      return ((months_between(start_date, end_date).to_f + 1 )/ cycles).ceil
+    end
+  end
+
+  def time_ranges_of_cycles
+    start_date_of_range = start_date
+    result = cycles_num.times.map do |i|
+      end_date_of_range = monthlong_end_date_since((i + 1) * cycles, start_date)
+      time_range = {
+        start_date: start_date_of_range,
+        end_date: end_date_of_range
+      }
+      start_date_of_range = end_date_of_range.next_day
+      time_range
+    end
+    result.last[:end_date] = end_date
+    result
+  end
+
   def invoices
-    date_phases.map.with_index do |date_phase, i|
+    time_ranges_of_cycles.map do |time_range|
       total = price * cycles
-      if (phase_num == i + 1) && !last_phase_completed?
-        date_phase_start = date_phase[:start_date]
-        date_phase_end = date_phase[:end_date]
-        total = piece_days * price_per_day + months_between_dates(date_phase_end, date_phase_start) * price
+      due_date = middle_of_prev_month(time_range[:start_date])
+      invoice_start_date = time_range[:start_date]
+      invoice_end_date = time_range[:end_date]
+      if !monthlong?(invoice_start_date, invoice_end_date)
+        total = scattered_days_between(invoice_start_date, invoice_end_date) * price_per_day + months_between(invoice_start_date, invoice_end_date) * price
       end
-      date_phase[:total] = total
-      due_date = middle_of_prev_month(date_phase[:start_date])
-      date_phase[:due_date] = due_date
-      date_phase[:renting_phase] = self
-      Invoice.create!(date_phase)
+      invoice_param = {
+        total: total,
+        start_date: invoice_start_date,
+        end_date: invoice_end_date,
+        due_date: due_date,
+        renting_phase: self
+      }
+      Invoice.create!(invoice_param)
     end
   end
 
