@@ -9,7 +9,33 @@ class Invoice < ApplicationRecord
   validates :due_date, presence: true
   validates :total, presence: true
 
-  after_save :set_line_items
+  #after_save :set_line_items
+
+  def items_num
+    if monthlong?(start_date, end_date)
+      months_between(start_date, end_date)
+    else
+      months_between(start_date, end_date) + 1
+    end
+  end
+
+  def time_ranges_of_items
+    start_date_of_range = start_date
+    result = items_num.times.map do |i|
+      end_date_of_range = monthlong_end_date_since(i + 1, start_date)
+      time_range = {
+        start_date: start_date_of_range,
+        end_date: end_date_of_range
+      }
+      start_date_of_range = end_date_of_range.next_day
+      time_range
+    end
+    result.last[:end_date] = end_date
+    result
+  end
+
+  def generate_items
+  end
 
   private
 

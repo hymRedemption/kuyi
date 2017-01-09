@@ -40,11 +40,9 @@ module DatePhase
   end
 
   def monthlong?(smaller_date, bigger_date)
-    if same_month?(smaller_date, bigger_date)
-      monthlong_in_same_month?(smaller_date, bigger_date)
-    else
-      monthlong_in_different_month?(smaller_date, bigger_date)
-    end
+    return true if beginning_of_month?(smaller_date) && end_of_month?(bigger_date)
+    return false if same_month?(smaller_date, bigger_date)
+    monthlong_in_different_month?(smaller_date, bigger_date)
   end
 
   def middle_of_prev_month(date)
