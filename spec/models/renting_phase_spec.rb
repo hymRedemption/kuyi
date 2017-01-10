@@ -27,7 +27,7 @@ RSpec.describe RentingPhase, type: :model do
         invoices = renting_phase.generate_invoices
         price = renting_phase.price
         price_per_day = price * 12/ 365
-        expect(invoices[0].total.floor(4)).to eq(11 * price_per_day.floor(4))
+        expect(invoices[0].total).to eq(11 * price_per_day)
       end
 
       it 'returns invoices with right due_date' do

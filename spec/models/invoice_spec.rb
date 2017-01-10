@@ -1,8 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe Invoice, type: :model do
-  let(:price) { 100.0 }
-  let(:price_per_day) { price * 12 / 365 }
+  let(:price) { BigDecimal(100) }
+  let(:price_per_day) { BigDecimal(price * 12 / 365).truncate(2) }
   let(:renting_phase) do
     FactoryGirl.create(:renting_phase,
                        price: price)
