@@ -26,9 +26,10 @@ module CoreExtensions
 
     def integral_months_end_date_since(num)
       predict_end_date = self.months_since(num)
-      return predict_end_date if self.integral_months_to?(predict_end_date)
-
-      predict_end_date.prev_day
+       if !self.integral_months_to?(predict_end_date)
+         predict_end_date = predict_end_date.prev_day
+       end
+      predict_end_date
     end
 
     def scattered_days_to(date)
@@ -43,25 +44,13 @@ module CoreExtensions
       (bigger_date - first_scattered_date + 1).to_i * sign
     end
 
-    # return if self to date is integral month
     def integral_months_to?(date)
-      smaller_date = self
-      smaller_date, date = date, smaller_date if self > date
+      _, smaller_date, bigger_date = *order_with(date)
 
       return true if smaller_date.beginning_of_month? && date.end_of_month?
-      return false if smaller_date.same_month?(date)
-
-      days = smaller_date.mday
-      if !date.enough_days_of_this_month?(days)
-        return false if !date.end_of_month?
-      else
-        months_diff = smaller_date.months_diff_to(date)
-        return false if smaller_date.months_since(months_diff).prev_day != date
-      end
-      true
+      integral_in_different_months?(smaller_date, bigger_date)
     end
 
-    # return integral months num from self to date
     def integral_months_to(date)
       sign, smaller_date, bigger_date = *order_with(date)
 
@@ -71,8 +60,8 @@ module CoreExtensions
         return sign * (months_diff + 1)
       end
 
-      if !smaller_date.same_month?(bigger_date) && !smaller_date.integral_months_to?(bigger_date)
-        return sign * (months_diff - 1) if smaller_date.mday > bigger_date.mday
+      if smaller_than_months_diff?(smaller_date, bigger_date)
+        return sign * (months_diff - 1)
       end
 
       sign * months_diff
@@ -83,6 +72,24 @@ module CoreExtensions
     end
 
     private
+
+      def integral_in_different_months?(smaller_date, bigger_date)
+        return false if smaller_date.same_month?(bigger_date)
+        days = smaller_date.mday
+        if !bigger_date.enough_days_of_this_month?(days)
+          return false if !bigger_date.end_of_month?
+        else
+          months_diff = smaller_date.months_diff_to(bigger_date)
+          return false if smaller_date.months_since(months_diff).prev_day != bigger_date
+        end
+        true
+      end
+
+      def smaller_than_months_diff?(smaller_date, bigger_date)
+        !smaller_date.same_month?(bigger_date) &&
+          !smaller_date.integral_months_to?(bigger_date) &&
+          smaller_date.mday > bigger_date.mday
+      end
 
       def order_with(date)
         smaller_date , bigger_date = self, date
