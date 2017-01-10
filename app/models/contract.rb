@@ -1,5 +1,5 @@
 class Contract < ApplicationRecord
-  has_many :renting_phases
+  has_many :renting_phases, dependent: :destroy
 
   validates :start_date, presence: true
   validates :end_date, presence: true
@@ -101,7 +101,9 @@ class Contract < ApplicationRecord
   end
 
   def generate_invoices
-    renting_phases.map(&:generate_invoices).flatten
+    Contract.transaction do
+      renting_phases.map(&:generate_invoices).flatten
+    end
   end
 
   private

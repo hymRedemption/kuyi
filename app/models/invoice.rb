@@ -2,7 +2,7 @@ class Invoice < ApplicationRecord
 
   include DatePhase
 
-  has_many :line_items
+  has_many :line_items, dependent: :destroy
   belongs_to :renting_phase
 
   validates :start_date, presence: true
@@ -10,12 +10,14 @@ class Invoice < ApplicationRecord
   validates :due_date, presence: true
   validates :total, presence: true
 
+  after_create :generate_items
+
   def months_in_phase
     1
   end
 
   def generate_items
-    time_ranges_of_phases.map do |time_range|
+    @items ||= time_ranges_of_phases.map do |time_range|
       units, unit_price = item_price_info(time_range[:start_date], time_range[:end_date])
       item_params = {
         unit_price: unit_price,
@@ -36,6 +38,6 @@ class Invoice < ApplicationRecord
         units = item_start_date.scattered_days_to(item_end_date)
         unit_price = renting_phase.price_per_day
       end
-      return [units, unit_price]
+      [units, unit_price]
     end
 end
