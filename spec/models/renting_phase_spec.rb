@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe RentingPhase, type: :model do
 
-  context '#invoices' do
+  context '#generate_invoices' do
     context 'cycles 1' do
       let(:start_date) { Date.new(1999, 12, 31) }
       let(:end_date) { Date.new(2000, 1, 31) }
@@ -16,7 +16,7 @@ RSpec.describe RentingPhase, type: :model do
 
       it 'returns all correct invoices' do
         renting_phase = FactoryGirl.create(:renting_phase, phase_params)
-        invoices = renting_phase.invoices
+        invoices = renting_phase.generate_invoices
         expect(invoices[0].start_date).to eq(start_date)
         expect(invoices[0].end_date).to eq(Date.new(2000, 1, 30))
       end
@@ -24,7 +24,7 @@ RSpec.describe RentingPhase, type: :model do
       it 'returns invoices with right price' do
         phase_params[:end_date] = Date.new(2000, 1, 10)
         renting_phase = FactoryGirl.create(:renting_phase, phase_params)
-        invoices = renting_phase.invoices
+        invoices = renting_phase.generate_invoices
         price = renting_phase.price
         price_per_day = price * 12/ 365
         expect(invoices[0].total.floor(4)).to eq(11 * price_per_day.floor(4))
@@ -32,7 +32,7 @@ RSpec.describe RentingPhase, type: :model do
 
       it 'returns invoices with right due_date' do
         renting_phase = FactoryGirl.create(:renting_phase, phase_params)
-        invoices = renting_phase.invoices
+        invoices = renting_phase.generate_invoices
         expect(invoices[0].due_date).to eq(Date.new(1999, 11, 15))
       end
     end
@@ -50,7 +50,7 @@ RSpec.describe RentingPhase, type: :model do
 
       it 'returns all correct invoices' do
         renting_phase = FactoryGirl.create(:renting_phase, phase_params)
-        invoices = renting_phase.invoices
+        invoices = renting_phase.generate_invoices
         expect(invoices[0].start_date).to eq(start_date)
         expect(invoices[0].end_date).to eq(Date.new(2000, 2, 29))
         expect(invoices[1].start_date).to eq(Date.new(2000, 3, 1))

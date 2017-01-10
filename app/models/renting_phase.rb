@@ -16,22 +16,15 @@ class RentingPhase < ApplicationRecord
     cycles
   end
 
-  def invoices
+  def generate_invoices
     time_ranges_of_phases.map do |time_range|
-      total = price * cycles
+      total = total_price_of_phase(time_range[:start_date], time_range[:end_date])
       due_date = time_range[:start_date].middle_of_prev_month
-      invoice_start_date = time_range[:start_date]
-      invoice_end_date = time_range[:end_date]
-      if !invoice_start_date.integral_months_to?(invoice_end_date)
-        total = invoice_start_date.scattered_days_to(invoice_end_date) * price_per_day + invoice_start_date.integral_months_to(invoice_end_date) * price
-      end
       invoice_param = {
         total: total,
-        start_date: invoice_start_date,
-        end_date: invoice_end_date,
         due_date: due_date,
         renting_phase: self
-      }
+      }.merge(time_range)
       Invoice.create!(invoice_param)
     end
   end
@@ -41,6 +34,14 @@ class RentingPhase < ApplicationRecord
   end
 
   private
+
+  def total_price_of_phase(phase_start_date, phase_end_date)
+    total = price * months_in_phase
+    if !phase_start_date.integral_months_to?(phase_end_date)
+      total = phase_start_date.scattered_days_to(phase_end_date) * price_per_day + phase_start_date.integral_months_to(phase_end_date) * price
+    end
+    total
+  end
 
   def date_confirm
     if start_date >=  end_date
