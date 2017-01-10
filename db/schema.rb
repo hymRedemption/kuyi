@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170107053628) do
+ActiveRecord::Schema.define(version: 20170110082305) do
 
   create_table "contracts", force: :cascade do |t|
     t.date     "start_date"
@@ -23,9 +23,9 @@ ActiveRecord::Schema.define(version: 20170107053628) do
     t.date     "start_date"
     t.date     "end_date"
     t.date     "due_date"
-    t.decimal  "total"
-    t.datetime "created_at",       null: false
-    t.datetime "updated_at",       null: false
+    t.decimal  "total",            precision: 131072, scale: 2
+    t.datetime "created_at",                                    null: false
+    t.datetime "updated_at",                                    null: false
     t.integer  "renting_phase_id"
     t.index ["renting_phase_id"], name: "index_invoices_on_renting_phase_id"
   end
@@ -33,23 +33,23 @@ ActiveRecord::Schema.define(version: 20170107053628) do
   create_table "line_items", force: :cascade do |t|
     t.date     "start_date"
     t.date     "end_date"
-    t.decimal  "unit_price"
+    t.decimal  "unit_price", precision: 131072, scale: 2
     t.integer  "units"
-    t.decimal  "total"
+    t.decimal  "total",      precision: 131072, scale: 2
     t.integer  "invoice_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at",                              null: false
+    t.datetime "updated_at",                              null: false
     t.index ["invoice_id"], name: "index_line_items_on_invoice_id"
   end
 
   create_table "renting_phases", force: :cascade do |t|
     t.date     "start_date"
     t.date     "end_date"
-    t.decimal  "price"
+    t.decimal  "price",       precision: 131072, scale: 2
     t.integer  "cycles"
     t.integer  "contract_id"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
+    t.datetime "created_at",                               null: false
+    t.datetime "updated_at",                               null: false
     t.index ["contract_id"], name: "index_renting_phases_on_contract_id"
   end
 
